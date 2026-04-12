@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 
 import '../../../../core/dio/dio_provider.dart';
 import '../../data/datasources/pokedex_remote_data_source.dart';
+import '../../data/datasources/graphql_pokemon_remote_data_source.dart';
 import '../../data/repositories/pokedex_repository_impl.dart';
 import '../../domain/entities/ability_detail_entity.dart';
 import '../../domain/entities/berry_detail_entity.dart';
@@ -27,6 +29,7 @@ import '../../domain/usecases/get_move_detail_usecase.dart';
 import '../../domain/usecases/get_named_api_resources_usecase.dart';
 import '../../domain/usecases/get_named_api_resources_page_usecase.dart';
 import '../../domain/usecases/get_item_page_usecase.dart';
+import '../../domain/usecases/get_graphql_pokemon_page_usecase.dart';
 import '../../domain/usecases/get_pokemon_page_usecase.dart';
 import '../../domain/usecases/get_pokemon_detail_usecase.dart';
 import '../../domain/usecases/get_pokemons_usecase.dart';
@@ -48,14 +51,38 @@ enum PokedexTab {
 
 enum BrowseMode { pagination, lazyLoading, infiniteScroll }
 
+enum ApiSource { pokeApi, graphqlPokemon }
+
 final browseModeProvider = StateProvider<BrowseMode>(
   (ref) => BrowseMode.pagination,
+);
+
+final apiSourceProvider = StateProvider<ApiSource>(
+  (ref) => ApiSource.pokeApi,
 );
 
 final pokedexRemoteDataSourceProvider =
     Provider<PokedexRemoteDataSource>((ref) {
   final dio = ref.watch(dioProvider);
   return PokedexRemoteDataSourceImpl(dio);
+});
+
+final graphqlPokemonDioProvider = Provider<Dio>((ref) {
+  return Dio(
+    BaseOptions(
+      baseUrl: 'https://graphqlpokemon.favware.tech/v8',
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+      responseType: ResponseType.json,
+    ),
+  );
+});
+
+final graphqlPokemonRemoteDataSourceProvider =
+    Provider<GraphqlPokemonRemoteDataSource>((ref) {
+  final dio = ref.watch(graphqlPokemonDioProvider);
+  return GraphqlPokemonRemoteDataSourceImpl(dio);
 });
 
 final pokedexRepositoryProvider = Provider<PokedexRepositoryImpl>((ref) {
@@ -139,6 +166,12 @@ final getPokemonPageUseCaseProvider =
     Provider<GetPokemonPageUseCase>((ref) {
   final repository = ref.watch(pokedexRepositoryProvider);
   return GetPokemonPageUseCase(repository);
+});
+
+final getGraphqlPokemonPageUseCaseProvider =
+    Provider<GetGraphqlPokemonPageUseCase>((ref) {
+  final remote = ref.watch(graphqlPokemonRemoteDataSourceProvider);
+  return GetGraphqlPokemonPageUseCase(remote);
 });
 
 final getItemPageUseCaseProvider = Provider<GetItemPageUseCase>((ref) {

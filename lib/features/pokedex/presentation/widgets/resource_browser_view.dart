@@ -36,6 +36,7 @@ class ResourceBrowserView<T> extends StatefulWidget {
   final String searchHint;
   final String emptyMessage;
   final int pageSize;
+  final Object? dataSourceKey;
 
   const ResourceBrowserView({
     super.key,
@@ -47,6 +48,7 @@ class ResourceBrowserView<T> extends StatefulWidget {
     required this.onTap,
     required this.searchHint,
     required this.emptyMessage,
+    this.dataSourceKey,
     this.subtitleBuilder,
     this.pageSize = 20,
   });
@@ -92,7 +94,8 @@ class _ResourceBrowserViewState<T> extends State<ResourceBrowserView<T>> {
   @override
   void didUpdateWidget(covariant ResourceBrowserView<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.browseMode != widget.browseMode) {
+    if (oldWidget.browseMode != widget.browseMode ||
+        oldWidget.dataSourceKey != widget.dataSourceKey) {
       _resetAndReload();
     }
   }

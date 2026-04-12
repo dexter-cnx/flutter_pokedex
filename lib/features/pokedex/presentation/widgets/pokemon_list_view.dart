@@ -17,10 +17,23 @@ class PokemonListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final browseMode = ref.watch(browseModeProvider);
+    final apiSource = ref.watch(apiSourceProvider);
 
     return ResourceBrowserView(
       browseMode: browseMode,
+      dataSourceKey: apiSource,
       pageFetcher: (offset, limit) async {
+        if (apiSource == ApiSource.graphqlPokemon) {
+          final useCase = ref.read(getGraphqlPokemonPageUseCaseProvider);
+          final page = await useCase(offset: offset, limit: limit);
+          return PageResult(
+            items: page.items,
+            count: page.count,
+            offset: page.offset,
+            limit: page.limit,
+          );
+        }
+
         final useCase = ref.read(getPokemonPageUseCaseProvider);
         final page = await useCase(offset: offset, limit: limit);
         return PageResult(
@@ -30,7 +43,13 @@ class PokemonListView extends ConsumerWidget {
           limit: page.limit,
         );
       },
-      onRetry: () => ref.invalidate(getPokemonPageUseCaseProvider),
+      onRetry: () {
+        if (apiSource == ApiSource.graphqlPokemon) {
+          ref.invalidate(getGraphqlPokemonPageUseCaseProvider);
+          return;
+        }
+        ref.invalidate(getPokemonPageUseCaseProvider);
+      },
       searchHint: 'Search Pokémon by name',
       emptyMessage: 'No Pokémon found.',
       titleBuilder: (pokemon) => _capitalize(pokemon.name),

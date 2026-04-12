@@ -19,11 +19,12 @@ Translate the original React Native demo concepts into Flutter using:
 
 ## API Implementation
 
-The app talks directly to [PokéAPI](https://pokeapi.co/api/v2) through a clean data flow:
+The app talks directly to [PokéAPI](https://pokeapi.co/api/v2) and, for the Pokémon tab, an alternate GraphQL source through a clean data flow:
 
 - `presentation` layer decides which category tab and browse mode to show
 - `domain` layer defines entities, repositories, and use cases
 - `data` layer uses `Dio` to call PokéAPI endpoints and map JSON into entities
+- the Pokémon tab can switch between PokéAPI and GraphQL Pokémon from the header
 
 ### Base endpoints
 
@@ -61,6 +62,22 @@ Each list supports three loading strategies:
 - `Lazy loading` appends the next page when the user taps `Load more`
 - `Infinite scroll` automatically requests the next page when the user reaches the bottom
 
+### GraphQL Pokémon source
+
+The GraphQL source is based on the Pokémon-specific API documented on the GraphQL Pokémon guide site. The guide URL is:
+
+- [https://graphql-pokemon.vercel.app/](https://graphql-pokemon.vercel.app/)
+
+The working API endpoint used by the app is:
+
+- `https://graphqlpokemon.favware.tech/v8/`
+
+This source currently powers the Pokémon list browsing flow:
+
+- `getAllPokemon(offset, take)` is used for paging the Pokémon tab
+- list rows map `num`, `species`, and `sprite` into the app's Pokémon entity
+- the rest of the categories still use PokéAPI because the GraphQL Pokémon API is focused on Pokémon data
+
 ### Paging behavior
 
 The reusable browser widget sends `offset` and `limit` to the repository layer and receives a page result with:
@@ -94,6 +111,7 @@ This design keeps the UI simple and makes the app easier to extend:
 
 - Pokémon, items, abilities, moves, berries, types, species, evolution chains, locations, and location areas
 - Search, filter, pagination, lazy loading, and infinite scroll in every category
+- PokéAPI or GraphQL source selection for the Pokémon tab
 - Loading skeletons
 - Error state
 - Simple clean architecture separation

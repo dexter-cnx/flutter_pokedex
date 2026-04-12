@@ -9,6 +9,7 @@ class TabHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final browseMode = ref.watch(browseModeProvider);
+    final apiSource = ref.watch(apiSourceProvider);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -51,6 +52,26 @@ class TabHeader extends ConsumerWidget {
                       Tab(text: 'Locations'),
                       Tab(text: 'Areas'),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  SegmentedButton<ApiSource>(
+                    segments: const [
+                      ButtonSegment(
+                        value: ApiSource.pokeApi,
+                        label: Text('PokéAPI'),
+                        icon: Icon(Icons.dataset_outlined),
+                      ),
+                      ButtonSegment(
+                        value: ApiSource.graphqlPokemon,
+                        label: Text('GraphQL'),
+                        icon: Icon(Icons.data_object_outlined),
+                      ),
+                    ],
+                    selected: {apiSource},
+                    onSelectionChanged: (selection) {
+                      ref.read(apiSourceProvider.notifier).state =
+                          selection.first;
+                    },
                   ),
                   const SizedBox(height: 8),
                   SegmentedButton<BrowseMode>(
