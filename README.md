@@ -1,7 +1,7 @@
-# PokéAPI Explorer
+# Pokedex
 
 This project is a Flutter PokéAPI explorer built with Flutter.
-The repository name is `flutter_pokedex`.
+The Flutter package name is `pokedex`.
 
 ## Goal
 

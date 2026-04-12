@@ -1,4 +1,4 @@
-name: pokedex_explorer
+name: pokedex
 description: PokéAPI browser built with Clean Architecture, Riverpod, and Dio.
 publish_to: 'none'
 version: 1.0.0+1

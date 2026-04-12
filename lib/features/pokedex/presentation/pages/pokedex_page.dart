@@ -22,7 +22,7 @@ class PokedexPage extends StatelessWidget {
       length: PokedexTab.values.length,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('PokéAPI Explorer'),
+          title: const Text('Pokedex'),
           centerTitle: true,
         ),
         body: Column(

@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pokedex_explorer/main.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/ability_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/berry_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/evolution_chain_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/item_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/item_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/location_area_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/location_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/named_api_resource_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/page_result_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/move_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/pokemon_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/pokemon_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/pokemon_species_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/entities/type_detail_entity.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/repositories/pokedex_repository.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/usecases/get_item_page_usecase.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/usecases/get_named_api_resources_page_usecase.dart';
-import 'package:pokedex_explorer/features/pokedex/domain/usecases/get_pokemon_page_usecase.dart';
-import 'package:pokedex_explorer/features/pokedex/presentation/providers/pokedex_providers.dart';
+import 'package:pokedex/main.dart';
+import 'package:pokedex/features/pokedex/domain/entities/ability_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/berry_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/evolution_chain_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/item_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/item_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/location_area_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/location_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/named_api_resource_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/page_result_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/move_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/pokemon_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/pokemon_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/pokemon_species_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/entities/type_detail_entity.dart';
+import 'package:pokedex/features/pokedex/domain/repositories/pokedex_repository.dart';
+import 'package:pokedex/features/pokedex/domain/usecases/get_item_page_usecase.dart';
+import 'package:pokedex/features/pokedex/domain/usecases/get_named_api_resources_page_usecase.dart';
+import 'package:pokedex/features/pokedex/domain/usecases/get_pokemon_page_usecase.dart';
+import 'package:pokedex/features/pokedex/presentation/providers/pokedex_providers.dart';
 
 class _FakePokedexRepository implements PokedexRepository {
   @override
@@ -106,7 +106,8 @@ class _FakePokedexRepository implements PokedexRepository {
       throw UnimplementedError();
 
   @override
-  Future<PokemonSpeciesDetailEntity> getPokemonSpeciesDetail(String name) async =>
+  Future<PokemonSpeciesDetailEntity> getPokemonSpeciesDetail(
+          String name) async =>
       throw UnimplementedError();
 
   @override
@@ -135,7 +136,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('PokéAPI Explorer'), findsWidgets);
+    expect(find.text('Pokedex'), findsWidgets);
     expect(find.text('Pokémon'), findsWidgets);
     expect(find.text('Items'), findsWidgets);
     expect(find.text('Abilities'), findsWidgets);

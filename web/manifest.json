@@ -1,11 +1,11 @@
 {
-    "name": "pokedex_explorer",
-    "short_name": "pokedex_explorer",
+    "name": "Pokedex",
+    "short_name": "Pokedex",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFF8F4",
     "theme_color": "#F95D5D",
-    "description": "PokéAPI Explorer built with Flutter.",
+    "description": "Pokedex built with Flutter.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
