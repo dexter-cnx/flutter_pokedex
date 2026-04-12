@@ -1,9 +1,13 @@
 import 'package:dio/dio.dart';
 
 import '../../../../core/error/exceptions.dart';
+import '../../domain/entities/graphql_ability_detail_entity.dart';
+import '../../domain/entities/graphql_move_detail_entity.dart';
 import '../../domain/entities/graphql_pokemon_detail_entity.dart';
 import '../../domain/entities/page_result_entity.dart';
 import '../../domain/entities/pokemon_entity.dart';
+import '../models/graphql_ability_detail_model.dart';
+import '../models/graphql_move_detail_model.dart';
 import '../models/graphql_pokemon_detail_model.dart';
 import '../models/pokemon_model.dart';
 
@@ -13,6 +17,8 @@ abstract class GraphqlPokemonRemoteDataSource {
     required int limit,
   });
   Future<GraphqlPokemonDetailEntity> getPokemonDetail(int id);
+  Future<GraphqlAbilityDetailEntity> getAbilityDetail(String name);
+  Future<GraphqlMoveDetailEntity> getMoveDetail(String name);
 }
 
 class GraphqlPokemonRemoteDataSourceImpl
@@ -43,6 +49,10 @@ class GraphqlPokemonRemoteDataSourceImpl
     }
   }
 
+  String _normalizeGraphqlKey(String name) {
+    return name.replaceAll('-', '').toLowerCase();
+  }
+
   @override
   Future<PageResultEntity<PokemonEntity>> getPokemonsPage({
     required int offset,
@@ -62,8 +72,8 @@ class GraphqlPokemonRemoteDataSourceImpl
     );
 
     final results = ((data['data'] as Map<String, dynamic>)['getAllPokemon']
-            as List<dynamic>? ??
-        const [])
+                as List<dynamic>? ??
+            const [])
         .cast<Map<String, dynamic>>();
 
     final items = results
@@ -167,8 +177,9 @@ class GraphqlPokemonRemoteDataSourceImpl
       variables: {'number': id},
     );
 
-    final pokemon = ((data['data'] as Map<String, dynamic>)
-        ['getPokemonByDexNumber'] as Map<String, dynamic>?);
+    final pokemon =
+        ((data['data'] as Map<String, dynamic>)['getPokemonByDexNumber']
+            as Map<String, dynamic>?);
     if (pokemon == null) {
       throw ServerException('Pokémon not found');
     }
@@ -193,6 +204,106 @@ class GraphqlPokemonRemoteDataSourceImpl
       flavorText: _extractFlavorText(
         pokemon['flavorTexts'] as List<dynamic>?,
       ),
+    );
+  }
+
+  @override
+  Future<GraphqlAbilityDetailEntity> getAbilityDetail(String name) async {
+    final data = await _postGraphqlQuery(
+      r'''
+      query GetAbility($ability: AbilitiesEnum!) {
+        getAbility(ability: $ability) {
+          name
+          shortDesc
+          desc
+          isFieldAbility
+          isNonstandard
+          pokemonThatHaveThisAbility {
+            name
+          }
+        }
+      }
+      ''',
+      variables: {'ability': _normalizeGraphqlKey(name)},
+    );
+
+    final ability = ((data['data'] as Map<String, dynamic>)['getAbility']
+        as Map<String, dynamic>?);
+    if (ability == null) {
+      throw ServerException('Ability not found');
+    }
+
+    return GraphqlAbilityDetailModel.fromRaw(
+      name: ability['name'] as String,
+      shortEffect: (ability['shortDesc'] as String?) ?? '',
+      effect: (ability['desc'] as String?)?.isNotEmpty == true
+          ? ability['desc'] as String
+          : (ability['shortDesc'] as String?) ??
+              'No effect description available.',
+      isFieldAbility: (ability['isFieldAbility'] as String?) ?? '',
+      isNonstandard: (ability['isNonstandard'] as String?) ?? '',
+      pokemonCount:
+          ((ability['pokemonThatHaveThisAbility'] as List<dynamic>? ?? [])
+              .length),
+    );
+  }
+
+  @override
+  Future<GraphqlMoveDetailEntity> getMoveDetail(String name) async {
+    final data = await _postGraphqlQuery(
+      r'''
+      query GetMove($move: MovesEnum!) {
+        getMove(move: $move) {
+          name
+          type
+          category
+          contestType
+          desc
+          shortDesc
+          accuracy
+          basePower
+          pp
+          priority
+          target
+          maxMovePower
+          zMovePower
+          isFieldMove
+          isGMax
+          isNonstandard
+          isZ
+        }
+      }
+      ''',
+      variables: {'move': _normalizeGraphqlKey(name)},
+    );
+
+    final move = ((data['data'] as Map<String, dynamic>)['getMove']
+        as Map<String, dynamic>?);
+    if (move == null) {
+      throw ServerException('Move not found');
+    }
+
+    return GraphqlMoveDetailModel.fromRaw(
+      name: move['name'] as String,
+      type: move['type'] as String,
+      category: move['category'] as String,
+      contestType: (move['contestType'] as String?) ?? '',
+      accuracy: (move['accuracy'] as int?) ?? 0,
+      basePower: (move['basePower'] as String?) ?? '—',
+      pp: (move['pp'] as int?) ?? 0,
+      priority: (move['priority'] as int?) ?? 0,
+      target: move['target'] as String,
+      maxMovePower: move['maxMovePower'] as int?,
+      zMovePower: move['zMovePower'] as int?,
+      effect: (move['desc'] as String?)?.isNotEmpty == true
+          ? move['desc'] as String
+          : (move['shortDesc'] as String?) ??
+              'No effect description available.',
+      shortEffect: (move['shortDesc'] as String?) ?? '',
+      isFieldMove: (move['isFieldMove'] as String?) ?? '',
+      isGMax: (move['isGMax'] as String?) ?? '',
+      isNonstandard: (move['isNonstandard'] as String?) ?? '',
+      isZ: (move['isZ'] as String?) ?? '',
     );
   }
 }

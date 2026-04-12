@@ -8,6 +8,8 @@ import '../../data/repositories/pokedex_repository_impl.dart';
 import '../../domain/entities/ability_detail_entity.dart';
 import '../../domain/entities/berry_detail_entity.dart';
 import '../../domain/entities/evolution_chain_entity.dart';
+import '../../domain/entities/graphql_ability_detail_entity.dart';
+import '../../domain/entities/graphql_move_detail_entity.dart';
 import '../../domain/entities/graphql_pokemon_detail_entity.dart';
 import '../../domain/entities/item_detail_entity.dart';
 import '../../domain/entities/item_entity.dart';
@@ -20,10 +22,12 @@ import '../../domain/entities/pokemon_entity.dart';
 import '../../domain/entities/pokemon_species_detail_entity.dart';
 import '../../domain/entities/type_detail_entity.dart';
 import '../../domain/usecases/get_ability_detail_usecase.dart';
+import '../../domain/usecases/get_graphql_ability_detail_usecase.dart';
 import '../../domain/usecases/get_berry_detail_usecase.dart';
 import '../../domain/usecases/get_evolution_chain_usecase.dart';
 import '../../domain/usecases/get_graphql_pokemon_detail_usecase.dart';
 import '../../domain/usecases/get_graphql_pokemon_page_usecase.dart';
+import '../../domain/usecases/get_graphql_move_detail_usecase.dart';
 import '../../domain/usecases/get_item_detail_usecase.dart';
 import '../../domain/usecases/get_items_usecase.dart';
 import '../../domain/usecases/get_location_area_detail_usecase.dart';
@@ -164,8 +168,7 @@ final getNamedApiResourcesUseCaseProvider =
   return GetNamedApiResourcesUseCase(repository);
 });
 
-final getPokemonPageUseCaseProvider =
-    Provider<GetPokemonPageUseCase>((ref) {
+final getPokemonPageUseCaseProvider = Provider<GetPokemonPageUseCase>((ref) {
   final repository = ref.watch(pokedexRepositoryProvider);
   return GetPokemonPageUseCase(repository);
 });
@@ -182,10 +185,35 @@ final getGraphqlPokemonDetailUseCaseProvider =
   return GetGraphqlPokemonDetailUseCase(remote);
 });
 
+final getGraphqlAbilityDetailUseCaseProvider =
+    Provider<GetGraphqlAbilityDetailUseCase>((ref) {
+  final remote = ref.watch(graphqlPokemonRemoteDataSourceProvider);
+  return GetGraphqlAbilityDetailUseCase(remote);
+});
+
+final getGraphqlMoveDetailUseCaseProvider =
+    Provider<GetGraphqlMoveDetailUseCase>((ref) {
+  final remote = ref.watch(graphqlPokemonRemoteDataSourceProvider);
+  return GetGraphqlMoveDetailUseCase(remote);
+});
+
 final graphqlPokemonDetailProvider =
     FutureProvider.family<GraphqlPokemonDetailEntity, int>((ref, id) async {
   final useCase = ref.watch(getGraphqlPokemonDetailUseCaseProvider);
   return useCase(id);
+});
+
+final graphqlAbilityDetailProvider =
+    FutureProvider.family<GraphqlAbilityDetailEntity, String>(
+        (ref, name) async {
+  final useCase = ref.watch(getGraphqlAbilityDetailUseCaseProvider);
+  return useCase(name);
+});
+
+final graphqlMoveDetailProvider =
+    FutureProvider.family<GraphqlMoveDetailEntity, String>((ref, name) async {
+  final useCase = ref.watch(getGraphqlMoveDetailUseCaseProvider);
+  return useCase(name);
 });
 
 final getItemPageUseCaseProvider = Provider<GetItemPageUseCase>((ref) {

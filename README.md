@@ -73,13 +73,15 @@ The working API endpoint used by the app is:
 
 - `https://graphqlpokemon.favware.tech/v8/`
 
-This source currently powers the Pokémon list browsing flow:
+This source currently powers the Pokémon browsing flow and selected detail screens:
 
 - `getAllPokemon(offset, take)` is used for paging the Pokémon tab
 - `getPokemonByDexNumber(number)` is used for Pokémon detail
+- `getAbility(ability)` is used for ability detail when GraphQL is selected
+- `getMove(move)` is used for move detail when GraphQL is selected
 - list rows map `num`, `species`, and `sprite` into the app's Pokémon entity
 - detail maps the GraphQL response into the Pokémon detail screen, including flavor text, base stats total, evolutions, and alternate sprites
-- the rest of the categories still use PokéAPI because the GraphQL Pokémon API is focused on Pokémon data
+- ability and move detail screens also switch to GraphQL, while the rest of the categories still use PokéAPI because the GraphQL Pokémon API is focused on Pokémon data
 
 ### Paging behavior
 

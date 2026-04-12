@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/move_detail_entity.dart';
+import '../../domain/entities/graphql_move_detail_entity.dart';
 import '../providers/pokedex_providers.dart';
 import '../widgets/async_error_view.dart';
 
@@ -86,10 +87,110 @@ class MoveDetailPage extends ConsumerWidget {
     );
   }
 
+  Widget _metricLines(String label, String value) {
+    return Text('$label: $value');
+  }
+
+  Widget _buildGraphqlDetail(GraphqlMoveDetailEntity move) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _capitalize(move.name.replaceAll('-', ' ')),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${move.type} • ${move.category}',
+            style: const TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              _metric('Base power', move.basePower),
+              const SizedBox(width: 12),
+              _metric('Accuracy', move.accuracy.toString()),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _metric('PP', move.pp.toString()),
+              const SizedBox(width: 12),
+              _metric('Priority', move.priority.toString()),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _metric(
+                'Max move',
+                move.maxMovePower?.toString() ?? '—',
+              ),
+              const SizedBox(width: 12),
+              _metric('Z move', move.zMovePower?.toString() ?? '—'),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Effect',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                move.effect,
+                style: const TextStyle(fontSize: 16, height: 1.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _metricLines('Target', move.target),
+          _metricLines('Field move',
+              move.isFieldMove.isNotEmpty ? move.isFieldMove : 'No'),
+          _metricLines('G-Max', move.isGMax.isNotEmpty ? move.isGMax : 'No'),
+          _metricLines('Z-Move', move.isZ.isNotEmpty ? move.isZ : 'No'),
+          _metricLines(
+            'Nonstandard',
+            move.isNonstandard.isNotEmpty ? move.isNonstandard : 'No',
+          ),
+          if (move.contestType.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _metricLines('Contest type', move.contestType),
+          ],
+          if (move.shortEffect.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _metricLines('Short effect', move.shortEffect),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncMove = ref.watch(moveDetailProvider(moveName));
+    final apiSource = ref.watch(apiSourceProvider);
 
+    if (apiSource == ApiSource.graphqlPokemon) {
+      final asyncMove = ref.watch(graphqlMoveDetailProvider(moveName));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Move Detail')),
+        body: asyncMove.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => AsyncErrorView(
+            error: error,
+            onRetry: () => ref.invalidate(graphqlMoveDetailProvider(moveName)),
+          ),
+          data: _buildGraphqlDetail,
+        ),
+      );
+    }
+
+    final asyncMove = ref.watch(moveDetailProvider(moveName));
     return Scaffold(
       appBar: AppBar(title: const Text('Move Detail')),
       body: asyncMove.when(
