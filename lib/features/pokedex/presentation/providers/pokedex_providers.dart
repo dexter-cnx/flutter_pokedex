@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 
 import '../../../../core/dio/dio_provider.dart';
 import '../../data/datasources/pokedex_remote_data_source.dart';
@@ -69,20 +68,8 @@ final apiSourceProvider = StateProvider<ApiSource>(
 
 final pokedexRemoteDataSourceProvider =
     Provider<PokedexRemoteDataSource>((ref) {
-  final dio = ref.watch(dioProvider);
+  final dio = ref.watch(apiPokemonDioProvider);
   return PokedexRemoteDataSourceImpl(dio);
-});
-
-final graphqlPokemonDioProvider = Provider<Dio>((ref) {
-  return Dio(
-    BaseOptions(
-      baseUrl: 'https://graphqlpokemon.favware.tech/v8',
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      sendTimeout: const Duration(seconds: 15),
-      responseType: ResponseType.json,
-    ),
-  );
 });
 
 final graphqlPokemonRemoteDataSourceProvider =
