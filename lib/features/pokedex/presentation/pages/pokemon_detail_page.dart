@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/entities/graphql_pokemon_detail_entity.dart';
 import '../../domain/entities/pokemon_detail_entity.dart';
 import '../providers/pokedex_providers.dart';
 import '../widgets/async_error_view.dart';
@@ -64,6 +65,33 @@ class PokemonDetailPage extends ConsumerWidget {
             ),
           )
           .toList(growable: false),
+    );
+  }
+
+  Widget _buildGraphqlMetricCard(String label, String value) {
+    return Expanded(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -175,10 +203,169 @@ class PokemonDetailPage extends ConsumerWidget {
     );
   }
 
+  Widget _buildGraphqlDetail(
+    BuildContext context,
+    WidgetRef ref,
+    GraphqlPokemonDetailEntity pokemon,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: CachedNetworkImage(
+              imageUrl: pokemon.spriteUrl,
+              width: 180,
+              height: 180,
+              fit: BoxFit.contain,
+              placeholder: (_, __) => const SizedBox(
+                width: 180,
+                height: 180,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (_, __, ___) =>
+                  const Icon(Icons.catching_pokemon, size: 120),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _capitalize(pokemon.name),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '#${pokemon.id.toString().padLeft(3, '0')}',
+            style: const TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildGraphqlMetricCard('Height', '${pokemon.height} m'),
+              const SizedBox(width: 12),
+              _buildGraphqlMetricCard('Weight', '${pokemon.weight} kg'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildGraphqlMetricCard('Base Stats', pokemon.baseStatsTotal.toString()),
+              const SizedBox(width: 12),
+              _buildGraphqlMetricCard('Abilities', pokemon.abilities.length.toString()),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Types',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          _buildChipList(context, ref, pokemon.types, tappable: false),
+          const SizedBox(height: 24),
+          const Text(
+            'Abilities',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          _buildAbilityChipList(pokemon.abilities),
+          const SizedBox(height: 24),
+          const Text(
+            'Flavor Text',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Text(pokemon.flavorText),
+          const SizedBox(height: 24),
+          const Text(
+            'Sprites',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              if (pokemon.backSpriteUrl.isNotEmpty)
+                _buildSpriteCard('Back', pokemon.backSpriteUrl),
+              if (pokemon.shinySpriteUrl.isNotEmpty)
+                _buildSpriteCard('Shiny', pokemon.shinySpriteUrl),
+            ],
+          ),
+          if (pokemon.evolutions.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            const Text(
+              'Evolutions',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            _buildAbilityChipList(pokemon.evolutions),
+          ],
+          if (pokemon.preEvolutions.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            const Text(
+              'Pre-evolutions',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            _buildAbilityChipList(pokemon.preEvolutions),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpriteCard(String label, String url) {
+    return SizedBox(
+      width: 160,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              Text(label),
+              const SizedBox(height: 8),
+              CachedNetworkImage(
+                imageUrl: url,
+                width: 96,
+                height: 96,
+                fit: BoxFit.contain,
+                placeholder: (_, __) => const SizedBox(
+                  width: 96,
+                  height: 96,
+                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncPokemon = ref.watch(pokemonDetailProvider(pokemonId));
+    final apiSource = ref.watch(apiSourceProvider);
 
+    if (apiSource == ApiSource.graphqlPokemon) {
+      final asyncPokemon = ref.watch(graphqlPokemonDetailProvider(pokemonId));
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Pokémon Detail'),
+        ),
+        body: asyncPokemon.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => AsyncErrorView(
+            error: error,
+            onRetry: () {
+              ref.invalidate(graphqlPokemonDetailProvider(pokemonId));
+            },
+          ),
+          data: (pokemon) => _buildGraphqlDetail(context, ref, pokemon),
+        ),
+      );
+    }
+
+    final asyncPokemon = ref.watch(pokemonDetailProvider(pokemonId));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pokémon Detail'),
@@ -187,7 +374,9 @@ class PokemonDetailPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => AsyncErrorView(
           error: error,
-          onRetry: () => ref.invalidate(pokemonDetailProvider(pokemonId)),
+          onRetry: () {
+            ref.invalidate(pokemonDetailProvider(pokemonId));
+          },
         ),
         data: (pokemon) => _buildDetail(context, ref, pokemon),
       ),

@@ -1,6 +1,7 @@
 # PokéAPI Explorer
 
 This project is a Flutter PokéAPI explorer built with Flutter.
+The repository name is `flutter_pokedex`.
 
 ## Goal
 
@@ -75,7 +76,9 @@ The working API endpoint used by the app is:
 This source currently powers the Pokémon list browsing flow:
 
 - `getAllPokemon(offset, take)` is used for paging the Pokémon tab
+- `getPokemonByDexNumber(number)` is used for Pokémon detail
 - list rows map `num`, `species`, and `sprite` into the app's Pokémon entity
+- detail maps the GraphQL response into the Pokémon detail screen, including flavor text, base stats total, evolutions, and alternate sprites
 - the rest of the categories still use PokéAPI because the GraphQL Pokémon API is focused on Pokémon data
 
 ### Paging behavior
