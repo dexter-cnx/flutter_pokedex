@@ -17,11 +17,25 @@ class LocationAreaListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncItems = ref.watch(locationAreasProvider);
+    final browseMode = ref.watch(browseModeProvider);
 
     return ResourceBrowserView(
-      asyncItems: asyncItems,
-      onRetry: () => ref.invalidate(locationAreasProvider),
+      browseMode: browseMode,
+      pageFetcher: (offset, limit) async {
+        final useCase = ref.read(getNamedApiResourcesPageUseCaseProvider);
+        final page = await useCase(
+          '/location-area',
+          offset: offset,
+          limit: limit,
+        );
+        return PageResult(
+          items: page.items,
+          count: page.count,
+          offset: page.offset,
+          limit: page.limit,
+        );
+      },
+      onRetry: () => ref.invalidate(getNamedApiResourcesPageUseCaseProvider),
       searchHint: 'Search location areas',
       emptyMessage: 'No location areas found.',
       titleBuilder: (item) => _formatName(item.name),

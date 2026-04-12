@@ -17,11 +17,21 @@ class MoveListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncItems = ref.watch(movesProvider);
+    final browseMode = ref.watch(browseModeProvider);
 
     return ResourceBrowserView(
-      asyncItems: asyncItems,
-      onRetry: () => ref.invalidate(movesProvider),
+      browseMode: browseMode,
+      pageFetcher: (offset, limit) async {
+        final useCase = ref.read(getNamedApiResourcesPageUseCaseProvider);
+        final page = await useCase('/move', offset: offset, limit: limit);
+        return PageResult(
+          items: page.items,
+          count: page.count,
+          offset: page.offset,
+          limit: page.limit,
+        );
+      },
+      onRetry: () => ref.invalidate(getNamedApiResourcesPageUseCaseProvider),
       searchHint: 'Search moves',
       emptyMessage: 'No moves found.',
       titleBuilder: (item) => _formatName(item.name),

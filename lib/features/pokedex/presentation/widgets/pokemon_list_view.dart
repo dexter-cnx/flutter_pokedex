@@ -16,11 +16,21 @@ class PokemonListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncPokemons = ref.watch(pokemonsProvider);
+    final browseMode = ref.watch(browseModeProvider);
 
     return ResourceBrowserView(
-      asyncItems: asyncPokemons,
-      onRetry: () => ref.invalidate(pokemonsProvider),
+      browseMode: browseMode,
+      pageFetcher: (offset, limit) async {
+        final useCase = ref.read(getPokemonPageUseCaseProvider);
+        final page = await useCase(offset: offset, limit: limit);
+        return PageResult(
+          items: page.items,
+          count: page.count,
+          offset: page.offset,
+          limit: page.limit,
+        );
+      },
+      onRetry: () => ref.invalidate(getPokemonPageUseCaseProvider),
       searchHint: 'Search Pokémon by name',
       emptyMessage: 'No Pokémon found.',
       titleBuilder: (pokemon) => _capitalize(pokemon.name),

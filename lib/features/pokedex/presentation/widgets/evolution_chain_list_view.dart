@@ -21,11 +21,25 @@ class EvolutionChainListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncItems = ref.watch(evolutionChainsProvider);
+    final browseMode = ref.watch(browseModeProvider);
 
     return ResourceBrowserView(
-      asyncItems: asyncItems,
-      onRetry: () => ref.invalidate(evolutionChainsProvider),
+      browseMode: browseMode,
+      pageFetcher: (offset, limit) async {
+        final useCase = ref.read(getNamedApiResourcesPageUseCaseProvider);
+        final page = await useCase(
+          '/evolution-chain',
+          offset: offset,
+          limit: limit,
+        );
+        return PageResult(
+          items: page.items,
+          count: page.count,
+          offset: page.offset,
+          limit: page.limit,
+        );
+      },
+      onRetry: () => ref.invalidate(getNamedApiResourcesPageUseCaseProvider),
       searchHint: 'Search evolution chains',
       emptyMessage: 'No evolution chains found.',
       titleBuilder: (item) => _formatChainName(item.url),

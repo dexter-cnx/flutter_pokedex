@@ -17,11 +17,21 @@ class AbilityListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncItems = ref.watch(abilitiesProvider);
+    final browseMode = ref.watch(browseModeProvider);
 
     return ResourceBrowserView(
-      asyncItems: asyncItems,
-      onRetry: () => ref.invalidate(abilitiesProvider),
+      browseMode: browseMode,
+      pageFetcher: (offset, limit) async {
+        final useCase = ref.read(getNamedApiResourcesPageUseCaseProvider);
+        final page = await useCase('/ability', offset: offset, limit: limit);
+        return PageResult(
+          items: page.items,
+          count: page.count,
+          offset: page.offset,
+          limit: page.limit,
+        );
+      },
+      onRetry: () => ref.invalidate(getNamedApiResourcesPageUseCaseProvider),
       searchHint: 'Search abilities',
       emptyMessage: 'No abilities found.',
       titleBuilder: (item) => _formatName(item.name),

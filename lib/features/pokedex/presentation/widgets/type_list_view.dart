@@ -17,11 +17,21 @@ class TypeListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncItems = ref.watch(typesProvider);
+    final browseMode = ref.watch(browseModeProvider);
 
     return ResourceBrowserView(
-      asyncItems: asyncItems,
-      onRetry: () => ref.invalidate(typesProvider),
+      browseMode: browseMode,
+      pageFetcher: (offset, limit) async {
+        final useCase = ref.read(getNamedApiResourcesPageUseCaseProvider);
+        final page = await useCase('/type', offset: offset, limit: limit);
+        return PageResult(
+          items: page.items,
+          count: page.count,
+          offset: page.offset,
+          limit: page.limit,
+        );
+      },
+      onRetry: () => ref.invalidate(getNamedApiResourcesPageUseCaseProvider),
       searchHint: 'Search types',
       emptyMessage: 'No types found.',
       titleBuilder: (item) => _formatName(item.name),

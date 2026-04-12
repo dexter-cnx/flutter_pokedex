@@ -25,6 +25,9 @@ import '../../domain/usecases/get_location_area_detail_usecase.dart';
 import '../../domain/usecases/get_location_detail_usecase.dart';
 import '../../domain/usecases/get_move_detail_usecase.dart';
 import '../../domain/usecases/get_named_api_resources_usecase.dart';
+import '../../domain/usecases/get_named_api_resources_page_usecase.dart';
+import '../../domain/usecases/get_item_page_usecase.dart';
+import '../../domain/usecases/get_pokemon_page_usecase.dart';
 import '../../domain/usecases/get_pokemon_detail_usecase.dart';
 import '../../domain/usecases/get_pokemons_usecase.dart';
 import '../../domain/usecases/get_species_detail_usecase.dart';
@@ -42,6 +45,12 @@ enum PokedexTab {
   locations,
   locationAreas,
 }
+
+enum BrowseMode { pagination, lazyLoading, infiniteScroll }
+
+final browseModeProvider = StateProvider<BrowseMode>(
+  (ref) => BrowseMode.pagination,
+);
 
 final pokedexRemoteDataSourceProvider =
     Provider<PokedexRemoteDataSource>((ref) {
@@ -124,6 +133,23 @@ final getNamedApiResourcesUseCaseProvider =
     Provider<GetNamedApiResourcesUseCase>((ref) {
   final repository = ref.watch(pokedexRepositoryProvider);
   return GetNamedApiResourcesUseCase(repository);
+});
+
+final getPokemonPageUseCaseProvider =
+    Provider<GetPokemonPageUseCase>((ref) {
+  final repository = ref.watch(pokedexRepositoryProvider);
+  return GetPokemonPageUseCase(repository);
+});
+
+final getItemPageUseCaseProvider = Provider<GetItemPageUseCase>((ref) {
+  final repository = ref.watch(pokedexRepositoryProvider);
+  return GetItemPageUseCase(repository);
+});
+
+final getNamedApiResourcesPageUseCaseProvider =
+    Provider<GetNamedApiResourcesPageUseCase>((ref) {
+  final repository = ref.watch(pokedexRepositoryProvider);
+  return GetNamedApiResourcesPageUseCase(repository);
 });
 
 final pokemonsProvider = FutureProvider<List<PokemonEntity>>((ref) async {

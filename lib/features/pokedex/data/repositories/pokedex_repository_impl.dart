@@ -5,6 +5,7 @@ import '../../domain/entities/item_entity.dart';
 import '../../domain/entities/item_detail_entity.dart';
 import '../../domain/entities/location_area_detail_entity.dart';
 import '../../domain/entities/location_detail_entity.dart';
+import '../../domain/entities/page_result_entity.dart';
 import '../../domain/entities/named_api_resource_entity.dart';
 import '../../domain/entities/move_detail_entity.dart';
 import '../../domain/entities/pokemon_species_detail_entity.dart';
@@ -25,8 +26,37 @@ class PokedexRepositoryImpl implements PokedexRepository {
   }
 
   @override
+  Future<PageResultEntity<PokemonEntity>> getPokemonsPage({
+    required int offset,
+    required int limit,
+  }) {
+    return remoteDataSource.getPokemonsPage(offset: offset, limit: limit);
+  }
+
+  @override
+  Future<PageResultEntity<ItemEntity>> getItemsPage({
+    required int offset,
+    required int limit,
+  }) {
+    return remoteDataSource.getItemsPage(offset: offset, limit: limit);
+  }
+
+  @override
   Future<List<NamedApiResourceEntity>> getNamedApiResources(String path) {
     return remoteDataSource.getNamedApiResources(path);
+  }
+
+  @override
+  Future<PageResultEntity<NamedApiResourceEntity>> getNamedApiResourcesPage(
+    String path, {
+    required int offset,
+    required int limit,
+  }) {
+    return remoteDataSource.getNamedApiResourcesPage(
+      path,
+      offset: offset,
+      limit: limit,
+    );
   }
 
   @override

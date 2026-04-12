@@ -4,6 +4,10 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../domain/entities/berry_detail_entity.dart';
 import '../../domain/entities/location_area_detail_entity.dart';
+import '../../domain/entities/page_result_entity.dart';
+import '../../domain/entities/pokemon_entity.dart';
+import '../../domain/entities/item_entity.dart';
+import '../../domain/entities/named_api_resource_entity.dart';
 import '../models/ability_detail_model.dart';
 import '../models/berry_detail_model.dart';
 import '../models/evolution_chain_model.dart';
@@ -22,6 +26,19 @@ abstract class PokedexRemoteDataSource {
   Future<List<PokemonModel>> getPokemons();
   Future<List<ItemModel>> getItems();
   Future<List<NamedApiResourceModel>> getNamedApiResources(String path);
+  Future<PageResultEntity<PokemonEntity>> getPokemonsPage({
+    required int offset,
+    required int limit,
+  });
+  Future<PageResultEntity<ItemEntity>> getItemsPage({
+    required int offset,
+    required int limit,
+  });
+  Future<PageResultEntity<NamedApiResourceEntity>> getNamedApiResourcesPage(
+    String path, {
+    required int offset,
+    required int limit,
+  });
   Future<PokemonDetailModel> getPokemonDetail(int id);
   Future<ItemDetailModel> getItemDetail(String name);
   Future<AbilityDetailModel> getAbilityDetail(String name);
@@ -91,6 +108,20 @@ class PokedexRemoteDataSourceImpl implements PokedexRemoteDataSource {
       }
     }
     return fallback;
+  }
+
+  PageResultEntity<T> _buildPageResult<T>({
+    required List<T> items,
+    required int count,
+    required int offset,
+    required int limit,
+  }) {
+    return PageResultEntity<T>(
+      items: items,
+      count: count,
+      offset: offset,
+      limit: limit,
+    );
   }
 
   String _extractEnglishFlavorText(List<dynamic>? flavorEntries,
@@ -178,6 +209,41 @@ class PokedexRemoteDataSourceImpl implements PokedexRemoteDataSource {
   }
 
   @override
+  Future<PageResultEntity<PokemonEntity>> getPokemonsPage({
+    required int offset,
+    required int limit,
+  }) async {
+    try {
+      final response = await dio.get(
+        '/pokemon',
+        queryParameters: {'offset': offset, 'limit': limit},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final results = (data['results'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+      final items = results.map((pokemon) {
+        final id = _extractIdFromUrl(pokemon['url'] as String);
+        return PokemonModel.fromRaw(
+          id: id,
+          name: pokemon['name'] as String,
+          spriteUrl: '${ApiConstants.pokemonSpriteBaseUrl}/$id.png',
+        );
+      }).toList(growable: false);
+
+      return _buildPageResult<PokemonEntity>(
+        items: items,
+        count: (data['count'] as int?) ?? items.length,
+        offset: offset,
+        limit: limit,
+      );
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to load Pokémon');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
   Future<List<ItemModel>> getItems() async {
     try {
       final response =
@@ -192,6 +258,40 @@ class PokedexRemoteDataSourceImpl implements PokedexRemoteDataSource {
           spriteUrl: '${ApiConstants.itemSpriteBaseUrl}/$name.png',
         );
       }).toList(growable: false);
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to load items');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<PageResultEntity<ItemEntity>> getItemsPage({
+    required int offset,
+    required int limit,
+  }) async {
+    try {
+      final response = await dio.get(
+        '/item',
+        queryParameters: {'offset': offset, 'limit': limit},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final results = (data['results'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+      final items = results.map((item) {
+        final name = item['name'] as String;
+        return ItemModel.fromRaw(
+          name: name,
+          spriteUrl: '${ApiConstants.itemSpriteBaseUrl}/$name.png',
+        );
+      }).toList(growable: false);
+
+      return _buildPageResult<ItemEntity>(
+        items: items,
+        count: (data['count'] as int?) ?? items.length,
+        offset: offset,
+        limit: limit,
+      );
     } on DioException catch (e) {
       throw ServerException(e.message ?? 'Failed to load items');
     } catch (e) {
@@ -221,6 +321,50 @@ class PokedexRemoteDataSourceImpl implements PokedexRemoteDataSource {
             ),
           )
           .toList(growable: false);
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to load resources');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<PageResultEntity<NamedApiResourceEntity>> getNamedApiResourcesPage(
+    String path, {
+    required int offset,
+    required int limit,
+  }) async {
+    try {
+      final response = await dio.get(
+        path,
+        queryParameters: {'offset': offset, 'limit': limit},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final results = (data['results'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+      final syntheticPrefix =
+          path.contains('evolution-chain') ? 'chain' : 'resource';
+
+      final items = results
+          .map(
+            (resource) => NamedApiResourceModel.fromRaw(
+              name: (resource['name'] as String?)?.isNotEmpty == true
+                  ? resource['name'] as String
+                  : _resourceNameFromUrl(
+                      resource['url'] as String,
+                      prefix: syntheticPrefix,
+                    ),
+              url: resource['url'] as String,
+            ),
+          )
+          .toList(growable: false);
+
+      return _buildPageResult<NamedApiResourceEntity>(
+        items: items,
+        count: (data['count'] as int?) ?? items.length,
+        offset: offset,
+        limit: limit,
+      );
     } on DioException catch (e) {
       throw ServerException(e.message ?? 'Failed to load resources');
     } catch (e) {
