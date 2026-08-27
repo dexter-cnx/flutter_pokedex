@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "title": "Pokedex",
+    "tagline": "A Flutter PokéAPI explorer using Clean Architecture, Riverpod, Dio, and multiple browse strategies.",
+    "status": "active",
+    "version": null
+  },
+  "summary": {
+    "short": "flutter_pokedex is a Flutter Pokédex explorer covering Pokémon, items, abilities, moves, berries, types, species, evolution chains, and locations with searchable paged browsing and detail screens.",
+    "long": "The app uses Clean Architecture with Riverpod and Dio, supports pagination, lazy loading, and infinite scroll, and can switch the Pokémon flow between PokéAPI REST and a GraphQL Pokémon source while keeping category-specific data logic in the repository and data layers."
+  },
+  "highlights": [
+    "Clean Architecture with Riverpod",
+    "PokéAPI REST and Pokémon GraphQL sources",
+    "Pagination, lazy loading, and infinite scroll",
+    "Reusable list and detail flows across many categories"
+  ],
+  "tech": ["Dart", "Flutter", "Riverpod", "Dio", "REST", "GraphQL"],
+  "links": {
+    "repository": "https://github.com/dexter-cnx/flutter_pokedex",
+    "homepage": null,
+    "package": null,
+    "docs": null,
+    "demo": null
+  },
+  "updatedAt": "2026-08-27T00:00:00Z"
+}
