@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "title": "Pokedex",
+    "tagline": "แอปสำรวจ PokéAPI ด้วย Flutter โดยใช้ Clean Architecture, Riverpod, Dio และหลายรูปแบบการ browse",
+    "status": "active",
+    "version": null
+  },
+  "summary": {
+    "short": "flutter_pokedex เป็นแอป Pokédex ด้วย Flutter ครอบคลุม Pokémon, item, ability, move, berry, type, species, evolution chain และ location พร้อม search, paging และ detail screen",
+    "long": "แอปใช้ Clean Architecture ร่วมกับ Riverpod และ Dio รองรับ pagination, lazy loading และ infinite scroll และสามารถสลับ source ของ Pokémon ระหว่าง PokéAPI REST กับ GraphQL โดยแยก data logic ไว้ใน repository และ data layer"
+  },
+  "highlights": [
+    "Clean Architecture พร้อม Riverpod",
+    "รองรับ PokéAPI REST และ Pokémon GraphQL",
+    "Pagination, lazy loading และ infinite scroll",
+    "Reusable list/detail flow หลายหมวดข้อมูล"
+  ],
+  "tech": ["Dart", "Flutter", "Riverpod", "Dio", "REST", "GraphQL"],
+  "links": {
+    "repository": "https://github.com/dexter-cnx/flutter_pokedex",
+    "homepage": null,
+    "package": null,
+    "docs": null,
+    "demo": null
+  },
+  "updatedAt": "2026-08-27T00:00:00Z"
+}
